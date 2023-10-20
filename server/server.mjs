@@ -58,17 +58,21 @@ const authorizationJWT = async (req, res, next) => {
 
   if (authorizationHeader) {
     const accessToken = authorizationHeader.split(" ")[1];
+
     getAuth()
       .verifyIdToken(accessToken)
       .then((decodedToken) => {
         res.locals.uid = decodedToken.uid;
+        next();
       })
       .catch((err) => {
-        console.log(err);
+        console.log({ err });
         return res.status(403).json({ message: "Forbidden", error: err });
       });
+  } else {
+    next();
+    // return res.status(401).json({ message: 'Unauthorized' });
   }
-  next();
 };
 
 app.use(
@@ -83,7 +87,7 @@ app.use(
     },
   })
 );
-
+mongoose.set("strictQuery", false);
 mongoose
   .connect(URI, {
     useNewUrlParser: true,

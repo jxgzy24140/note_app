@@ -5,6 +5,8 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthProvider";
 import { Navigate } from "react-router-dom";
 export default function Login() {
+  console.log("login");
+
   const { user } = useContext(AuthContext);
   if (user && localStorage.getItem("accessToken")) {
     return <Navigate to="/" />;

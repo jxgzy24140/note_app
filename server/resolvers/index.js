@@ -100,6 +100,26 @@ export const resolvers = {
       await newNotification.save();
       return { message: "Success" };
     },
+    deleteNote: async (parent, args, context) => {
+      const note = await NoteModel.findOne({
+        _id: args.noteId,
+      });
+      if (note) {
+        await NoteModel.findByIdAndDelete({
+          _id: args.noteId,
+        });
+        return note;
+      }
+      return { msg: "Note does not exist" };
+    },
+    deleteFolder: async (parent, args, context) => {
+      const folder = await FolderModel.findOne({ _id: args.folderId });
+      if (folder) {
+        await FolderModel.findByIdAndDelete({ _id: args.folderId });
+        return folder;
+      }
+      return { msg: "Folder does not exist" };
+    },
   },
   Subscription: {
     folderCreated: {

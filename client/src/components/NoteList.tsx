@@ -1,4 +1,4 @@
-import { NoteAddOutlined } from "@mui/icons-material";
+import { DeleteOutlineOutlined, NoteAddOutlined } from "@mui/icons-material";
 import {
   Card,
   CardContent,
@@ -9,7 +9,7 @@ import {
   Tooltip,
   IconButton,
 } from "@mui/material";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Link,
   Outlet,
@@ -19,36 +19,44 @@ import {
   useSubmit,
 } from "react-router-dom";
 import moment from "moment";
-interface Note {
-  id: string;
-  content: string;
-}
-
-interface Folder {
-  id: string;
-  notes: [Note];
-}
+import ConfirmDialog from "./ConfirmDialog";
+import { INoteListProps } from "../types";
 
 const NoteList = () => {
-  const { data }: { folder: Folder } = useLoaderData();
+  console.log("note list component");
+
+  const { folder } = useLoaderData() as INoteListProps;
+
+  const [isOpenConfirmDialog, setIsOpenCofirmDialog] = useState<boolean>(false);
+
   const navigate = useNavigate();
   const submit = useSubmit();
+
   const { noteId, folderId } = useParams();
 
   useEffect(() => {
-    if (data.folder.notes != 0) {
-      return navigate(`note/${data.folder.notes[0].id}`);
+    if (folder.notes.length !== 0) {
+      return navigate(`note/${folder.notes[0].id}`);
     }
   }, [folderId]);
 
   const handleAddNewNote = () => {
     submit(
       {
-        content: "",
+        content: "Writing something...",
         folderId: folderId || "",
+        type: "add",
       },
       { method: "post", action: `/folders/${folderId}` }
     );
+  };
+
+  const handleClose = () => {
+    setIsOpenCofirmDialog(false);
+  };
+
+  const handleOpen = () => {
+    setIsOpenCofirmDialog(true);
   };
 
   return (
@@ -85,38 +93,60 @@ const NoteList = () => {
               </Box>
             }
           >
-            {data &&
-              data.folder?.notes?.map((note) => {
+            {folder.notes &&
+              folder?.notes?.map((note) => {
                 return (
-                  <Link key={note.id} to={`note/${note.id}`}>
-                    <Card
-                      sx={{
-                        bgcolor: noteId == note.id ? "rgb(255 211 140)" : "",
-                      }}
-                    >
-                      <CardContent
-                        sx={{ "&:last-child": { pb: "10px" }, padding: "10px" }}
-                      >
-                        <div
-                          style={{ fontSize: "14px", fontWeight: "bold" }}
-                          dangerouslySetInnerHTML={{
-                            __html: `${note.content.substring(0, 30)}`,
-                          }}
-                        />
-                      </CardContent>
-                      <Typography
+                  <>
+                    <Link key={note.id} to={`note/${note.id}`}>
+                      <Card
                         sx={{
-                          fontSize: "12px",
-                          marginLeft: "10px",
-                          textDecoration: "none",
+                          marginBottom: "5px",
+                          bgcolor: noteId == note.id ? "rgb(255 211 140)" : "",
                         }}
                       >
-                        {moment(note.updatedAt).format(
-                          "MMM Do YYYY, h:mm:ss a"
-                        )}
-                      </Typography>
-                    </Card>
-                  </Link>
+                        <CardContent
+                          sx={{
+                            "&:last-child": { pb: "10px" },
+                            padding: "10px",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <div
+                              style={{ fontSize: "14px", fontWeight: "bold" }}
+                              dangerouslySetInnerHTML={{
+                                __html: `${note.content.substring(0, 30)}`,
+                              }}
+                            />
+                            <DeleteOutlineOutlined onClick={handleOpen} />
+                          </Box>
+                        </CardContent>
+                        <Typography
+                          sx={{
+                            fontSize: "12px",
+                            marginLeft: "10px",
+                            textDecoration: "none",
+                          }}
+                        >
+                          {moment(note.updatedAt).format(
+                            "MMM Do YYYY, h:mm:ss a"
+                          )}
+                        </Typography>
+                      </Card>
+                    </Link>
+
+                    <ConfirmDialog
+                      noteId={note.id}
+                      title="Delete"
+                      isOpen={isOpenConfirmDialog}
+                      content="Do you want delete this note?"
+                      handleClose={handleClose}
+                    />
+                  </>
                 );
               })}
           </List>

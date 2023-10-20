@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ContentState,
   convertFromHTML,
@@ -9,11 +9,15 @@ import { Editor } from "react-draft-wysiwyg";
 import draftToHtml from "draftjs-to-html";
 import { useLoaderData, useSubmit, useLocation } from "react-router-dom";
 import { debounce } from "@mui/material";
+import { INoteProps } from "../types";
 
 export default function Note() {
-  const {
-    data: { note },
-  } = useLoaderData();
+  console.log("note");
+
+  const { note } = useLoaderData() as INoteProps;
+
+  console.log("request note: ", note);
+
   const submit = useSubmit();
   const location = useLocation();
   const [editorState, setEditorState] = useState(() => {
@@ -29,6 +33,7 @@ export default function Note() {
       blocksFromHTML.entityMap
     );
     setEditorState(EditorState.createWithContent(state));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [note.id]);
 
   useEffect(() => {
@@ -37,11 +42,11 @@ export default function Note() {
   }, [rawHTML, location.pathname]);
 
   const debouncedMemorized = useMemo(() => {
-    return debounce((rawHTML, note, pathname) => {
+    return debounce((rawHTML, note, pathname, type = "edit") => {
       if (rawHTML === note.content) return;
 
       submit(
-        { ...note, content: rawHTML },
+        { ...note, content: rawHTML, type },
         {
           method: "post",
           action: pathname,
@@ -59,7 +64,6 @@ export default function Note() {
     setEditorState(e);
     setRawHTML(draftToHtml(convertToRaw(e.getCurrentContent())));
   };
-  console.log("editorState: ", editorState);
 
   return (
     <Editor

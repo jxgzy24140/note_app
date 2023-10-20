@@ -4,6 +4,7 @@ import { Avatar, Box, Menu, MenuItem, Typography } from "@mui/material";
 import { getAuth } from "firebase/auth";
 const UserMenu = () => {
   const { user } = useContext(AuthContext);
+
   const [anchorEl, setAnchorEl] = useState(null);
   const auth = getAuth();
   const handleLogout = () => {

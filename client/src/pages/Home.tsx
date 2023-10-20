@@ -6,9 +6,12 @@ import PushNotification from "../components/PushNotification";
 // import { getAuth } from "firebase/auth";
 // const auth = getAuth();
 // auth.signOut();
+import { Response } from "../types";
 
 const Home = () => {
-  const { data } = useLoaderData();
+  console.log("home");
+
+  const { folders } = useLoaderData() as Response;
 
   return (
     <>
@@ -27,7 +30,7 @@ const Home = () => {
         sx={{ height: "50vh", boxShadow: "0 0 15px 0 rgb(193 193 193 / 60%)" }}
       >
         <Grid item xs={3}>
-          <FolderList folders={data.folders} />
+          <FolderList folders={folders && folders} />
         </Grid>
         <Grid item xs={9}>
           <Outlet />

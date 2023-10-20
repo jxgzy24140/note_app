@@ -20,6 +20,8 @@ export const register = async ({ uid, displayName }) => {
 };
 
 export const getAllFolders = async () => {
+  console.log("loader [getAllFolders]");
+
   const query = `query Folders {
       folders {
         id
@@ -40,6 +42,8 @@ export const getAllFolders = async () => {
 };
 
 export const getNoteList = async ({ params }) => {
+  console.log("loader [getNoteList]");
+
   const query = `query Folder($folderId: String) {
       folder(folderId: $folderId) {
         id
@@ -57,10 +61,12 @@ export const getNoteList = async ({ params }) => {
       folderId: params.folderId,
     },
   });
+
   return data;
 };
 
 export const getNote = async ({ params }) => {
+  console.log("loader [getNote]");
   const query = `query Note($noteId: String, $folderId: String) {
     note(noteId: $noteId, folderId: $folderId) {
       id
@@ -75,6 +81,8 @@ export const getNote = async ({ params }) => {
       folderId: params.folderId,
     },
   });
+  console.log("note: ", data);
+
   return data;
 };
 
@@ -117,26 +125,66 @@ export const addNewNote = async ({ request }) => {
   return data;
 };
 
-export const updateNote = async ({ request }) => {
+export const noteAction = async ({ request }) => {
+  const formDataObj = {
+    content: "",
+    folderId: "",
+    id: "",
+    type: "",
+    noteId: "",
+  };
   const updatedNote = await request.formData();
-  const formDataObj = { content: String, folderId: String, id: String };
   updatedNote.forEach((value, key) => (formDataObj[key] = value));
-  const query = `
-  mutation Mutation($content: String!, $id: String!) {
-    updateNote(content: $content, id: $id) {
-      id
-      content
-      folderId
+
+  let query = "";
+  let variables = {};
+  if (formDataObj.type == "edit") {
+    query = `
+    mutation Mutation($content: String!, $id: String!) {
+      updateNote(content: $content, id: $id) {
+        id
+        content
+        folderId
+      }
     }
-  }
-  `;
-  const data = await graphqlRequest({
-    query,
-    variables: {
+    `;
+    variables = {
       id: formDataObj.id,
       content: formDataObj.content,
-    },
+    };
+  }
+  if (formDataObj.type === "add") {
+    query = `
+    mutation Mutation($content: String!, $folderId: String!) {
+      addNote(content: $content, folderId: $folderId) {
+        id
+        content
+        folderId
+        updatedAt
+      }
+    }
+    `;
+    variables = {
+      content: formDataObj.content,
+      folderId: formDataObj.folderId,
+    };
+  }
+  if (formDataObj.type === "delete") {
+    query = `
+    mutation Mutation($noteId: String) {
+      deleteNote(noteId: $noteId) {
+        id
+        content
+      }
+    }
+    `;
+    variables = {
+      noteId: formDataObj.noteId,
+    };
+  }
+  const data = await graphqlRequest({
+    query,
+    variables: variables,
   });
-
   return data;
 };

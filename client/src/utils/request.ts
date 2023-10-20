@@ -1,6 +1,7 @@
+import { GRAPHQL_SERVER } from "./constants";
 export const request = async (payload, options = {}) => {
   if (localStorage.getItem("accessToken")) {
-    const res = await fetch("http://localhost:4000/graphql", {
+    const res = await fetch(`${GRAPHQL_SERVER}/graphql`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -10,9 +11,16 @@ export const request = async (payload, options = {}) => {
       },
       body: JSON.stringify(payload),
     });
-    if (res.status === 403) return null;
-    const data = await res.json();
+
+    if (!res.ok) {
+      if (res.status === 403) {
+        return null;
+      }
+    }
+
+    const { data } = await res.json();
     return data;
   }
+
   return null;
 };

@@ -12,9 +12,11 @@ import {
   getNoteList,
   getNote,
   addNewNote,
-  updateNote,
+  noteAction,
 } from "../utils";
 const AuthLayout = () => {
+  console.log("auth layout");
+
   return (
     <AuthProvider>
       <Outlet />
@@ -49,7 +51,7 @@ const router = createBrowserRouter([
                     element: <Note />,
                     path: `note/:noteId`,
                     loader: getNote,
-                    action: updateNote,
+                    action: noteAction,
                   },
                 ],
               },
